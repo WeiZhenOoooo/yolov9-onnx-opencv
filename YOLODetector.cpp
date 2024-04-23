@@ -34,18 +34,12 @@ void YOLODetector::detect(cv::Mat &frame, std::vector<DetectResult> &results) {
     cv::Mat preds = outputs.at(0);
     cv::Mat det_output(preds.size[1], preds.size[2], CV_32F, preds.ptr<float>());
     det_output = det_output.t();
-    float confidence_threshold = 0.5;
     std::vector<cv::Rect> boxes;
     std::vector<int> classIds;
     std::vector<float> confidences;
     for (int i = 0; i < det_output.rows; i++)
     {
-        float confidence = det_output.at<float>(i, 4);
-        if (confidence < confidence_threshold)
-        {
-            continue;
-        }
-        cv::Mat classes_scores = det_output.row(i).colRange(4, 5);
+        cv::Mat classes_scores = det_output.row(i).colRange(4, det_output.cols);
         cv::Point classIdPoint;
         double score;
         minMaxLoc(classes_scores, 0, &score, 0, &classIdPoint);
@@ -85,8 +79,8 @@ void YOLODetector::detect(cv::Mat &frame, std::vector<DetectResult> &results) {
         dr.classId = idx;
         dr.score = confidences[index];
         cv::rectangle(frame, boxes[index], cv::Scalar(0, 0, 255), 2, 8);
-        cv::rectangle(frame, cv::Point(boxes[index].tl().x, boxes[index].tl().y - 20),
-                      cv::Point(boxes[index].br().x, boxes[index].tl().y), cv::Scalar(0, 255, 255), -1);
+//        cv::rectangle(frame, cv::Point(boxes[index].tl().x, boxes[index].tl().y - 20),
+//                      cv::Point(boxes[index].br().x, boxes[index].tl().y), cv::Scalar(0, 255, 255), -1);
         results.push_back(dr);
     }
 

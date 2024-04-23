@@ -6,6 +6,7 @@
 #define ONNX_SCRIPT_YOLODETECTOR_H
 
 #include <opencv2/opencv.hpp>
+#include <spdlog/spdlog.h>
 
 struct DetectResult
 {
@@ -21,8 +22,8 @@ public:
     void detect(cv::Mat& frame, std::vector<DetectResult>& results);
 
 private:
-    int input_w = 256;
-    int input_h = 256;
+    int input_w = 640;
+    int input_h = 640;
     cv::dnn::Net net;
     float threshold_score = 0.25;
 };

@@ -1,3 +1,4 @@
 .git/
 .idea/
 cmake-build-release/
+cmake-build-release-visual-studio/

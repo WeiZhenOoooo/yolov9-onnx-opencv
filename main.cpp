@@ -1,4 +1,3 @@
-#include <iostream>
 #include <opencv2/opencv.hpp>
 #include "YOLODetector.h"
 #include <yaml-cpp/yaml.h>
@@ -10,9 +9,13 @@ int main(int argc, char** argv) {
     CLI::App app{"yolo onnx opencv dnn pred description"};
     argv = app.ensure_utf8(argv);
     std::string onnxPath, yamlPath, imgPath, device = "cpu";
+    int imgSize = 640;
+    float threshold = 0.1;
     app.add_option("-w,--weights", onnxPath, "onnx model path");
     app.add_option("-c,--config", yamlPath, "train yolo yaml path, to find classes definition");
     app.add_option("-i,--image", imgPath, "pred img path");
+    app.add_option("-z,--imgsz", imgSize, "img size, default:640 * 640");
+    app.add_option("-t,--threshold", imgSize, "threshold score, default: 0.7");
     app.add_option("-d,--device", device, "cuda device, i.e. 0 or 0,1,2,3 or cpu, default: cpu");
     CLI11_PARSE(app, argc, argv);
     if(onnxPath.empty()){
@@ -48,6 +51,8 @@ int main(int argc, char** argv) {
     spdlog::info("onnx model path: {}", onnxPath);
     spdlog::info("yolo yaml path: {}", yamlPath);
     spdlog::info("pred img path: {}", imgPath);
+    spdlog::info("pred img size: {}", imgSize);
+    spdlog::info("confidence threshold: {}", threshold);
     YAML::Node config = YAML::LoadFile(yamlPath);
     std::map<int, std::string> classNames;
     if(!config["names"].IsNull() && config["names"].IsMap()){
@@ -55,11 +60,11 @@ int main(int argc, char** argv) {
             classNames[i] = config["names"][i].as<std::string>();
         }
     }
+    spdlog::info("classNames size: {}", classNames.size());
     if(!classNames.empty()){
         cv::Mat img = cv::imread(imgPath, cv::IMREAD_UNCHANGED);
         std::shared_ptr<YOLODetector> detector = std::make_shared<YOLODetector>();
-        int width = 256, height = 256;
-        float threshold = 0.7;
+        int width = imgSize, height = imgSize;
         detector->initConfig(onnxPath, width, height, threshold);
         std::vector<DetectResult> results;
         detector->detect(img, results);
@@ -73,7 +78,7 @@ int main(int argc, char** argv) {
         cv::waitKey(0);
         results.clear();
     } else {
-        std::cout << "yaml parse error! yamlPath: " << yamlPath << std::endl;
+        spdlog::error("yaml parse error! yamlPath: {}", yamlPath);
     }
     return 0;
 }
