@@ -7,12 +7,6 @@
 #include <spdlog/spdlog.h>
 
 int main(int argc, char** argv) {
-//    std::map<int, std::string> classNames;
-//    std::string onnxPath = "E:/code/yolov9/runs/train/yolov9-c/weights/best.onnx";
-//    std::string yamlPath = "E:/code/yolov9/data/banana256colab.yaml";
-////    std::string onnxPath = "E:/code/yolov9/weights/yolov9-c.onnx";
-//    std::string imgPath = "E:/code/yolov9/datasets/banana-detection/images/val/35.png";
-//    YAML::Node config = YAML::LoadFile(yamlPath);
     CLI::App app{"yolo onnx opencv dnn pred description"};
     argv = app.ensure_utf8(argv);
     std::string onnxPath, yamlPath, imgPath, device = "cpu";
