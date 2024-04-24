@@ -91,6 +91,33 @@ int main(int argc, char** argv) {
             cv::imshow("OpenCV DNN", img);
             cv::waitKey(0);
         } else if(isVideo){
+            cv::VideoCapture cap(imgPath);
+            if(!cap.isOpened()){
+                spdlog::error("Error opening video stream or file!! path: {}", imgPath);
+                return 0;
+            }
+            cv::Mat frame;
+            while (true){
+                cap >> frame; // 读取新的帧
+                if(frame.empty()){
+                    break;
+                }
+                detector->detect(frame, results);
+                for (DetectResult& dr : results)
+                {
+                    cv::Rect box = dr.box;
+                    std::string tips = classNames[dr.classId];
+                    tips.append(": ");
+                    tips.append(std::to_string(dr.score));
+                    cv::putText(frame, tips, cv::Point(box.tl().x, box.tl().y - 10), cv::FONT_HERSHEY_SIMPLEX,
+                                .5, cv::Scalar(255, 0, 0));
+                    cv::rectangle(frame, box, cv::Scalar(0, 0, 255), 2, 8);
+                }
+                cv::Mat mat;
+                frame.copyTo(mat);
+                cv::imshow("OpenCV DNN", mat);
+                cv::waitKey(1);
+            }
             //todo:
             spdlog::info("Video inference mode todo");
         }

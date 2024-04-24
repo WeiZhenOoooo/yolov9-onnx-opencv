@@ -33,7 +33,7 @@ private:
      * @param max_edge
      * @return
      */
-    cv::Mat resize_max_edge(cv::Mat mat, int max_edge);
+    static cv::Mat resize_max_edge(const cv::Mat& mat, int max_edge);
 };
 
 

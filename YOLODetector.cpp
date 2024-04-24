@@ -88,12 +88,12 @@ void YOLODetector::detect(cv::Mat &frame, std::vector<DetectResult> &results) {
     std::ostringstream ss;
     std::vector<double> layersTimings;
     double freq = cv::getTickFrequency() / 1000.0;
-    double time = net.getPerfProfile(layersTimings) / freq;
+    double time = this->net.getPerfProfile(layersTimings) / freq;
     ss << "FPS: " << 1000 / time << " ; time : " << time << " ms";
     putText(frame, ss.str(), cv::Point(20, 40), cv::FONT_HERSHEY_PLAIN, 2.0, cv::Scalar(255, 0, 0), 2, 8);
 }
 
-cv::Mat YOLODetector::resize_max_edge(cv::Mat mat, int max_edge) {
+cv::Mat YOLODetector::resize_max_edge(const cv::Mat& mat, int max_edge) {
     cv::Mat resizeMat;
     if(!mat.empty()){
         float width = mat.cols;
@@ -109,7 +109,6 @@ cv::Mat YOLODetector::resize_max_edge(cv::Mat mat, int max_edge) {
             new_width = max_edge;
             new_height = max_edge;
         }
-        spdlog::info("new_width: {}, new_height: {}", new_width, new_height);
         cv::resize(mat, resizeMat, cv::Size(int(new_width), int(new_height)), 0, 0, cv::INTER_LINEAR);
     }
     return resizeMat;
