@@ -18,7 +18,7 @@ int main(int argc, char** argv) {
     app.add_option("-z,--imgsz", imgSize, "img size, default:640 * 640");
     app.add_option("-t,--threshold", imgSize, "threshold score, default: 0.5");
     app.add_flag("--image, !--no-image", isImage, "Image inference mode");
-    app.add_flag("--video, !--no-video", isImage, "Video inference mode");
+    app.add_flag("--video, !--no-video", isVideo, "Video inference mode");
     app.add_option("-d,--device", device, "cuda device, i.e. 0 or 0,1,2,3 or cpu, default: cpu");
     CLI11_PARSE(app, argc, argv);
     if(onnxPath.empty()){
@@ -51,11 +51,17 @@ int main(int argc, char** argv) {
             return 0;
         }
     }
+    if(!isImage && !isVideo){
+        spdlog::error("Please select inference mode");
+        return 0;
+    }
     spdlog::info("onnx model path: {}", onnxPath);
     spdlog::info("yolo yaml path: {}", yamlPath);
     spdlog::info("pred img path: {}", imgPath);
     spdlog::info("pred img size: {}", imgSize);
     spdlog::info("confidence threshold: {}", threshold);
+    spdlog::info("Image inference mode: {}", isImage);
+    spdlog::info("Video inference mode: {}", isVideo);
     YAML::Node config = YAML::LoadFile(yamlPath);
     std::map<int, std::string> classNames;
     if(!config["names"].IsNull() && config["names"].IsMap()){
@@ -70,18 +76,23 @@ int main(int argc, char** argv) {
         int width = imgSize, height = imgSize;
         detector->initConfig(onnxPath, width, height, threshold);
         std::vector<DetectResult> results;
-        detector->detect(img, results);
-        for (DetectResult& dr : results)
-        {
-            cv::Rect box = dr.box;
-            std::string tips = classNames[dr.classId];
-            tips.append(": ");
-            tips.append(std::to_string(dr.score));
-            cv::putText(img, tips, cv::Point(box.tl().x, box.tl().y - 10), cv::FONT_HERSHEY_SIMPLEX,
-                        .5, cv::Scalar(255, 0, 0));
+        if(isImage){
+            detector->detect(img, results);
+            for (DetectResult& dr : results)
+            {
+                cv::Rect box = dr.box;
+                std::string tips = classNames[dr.classId];
+                tips.append(": ");
+                tips.append(std::to_string(dr.score));
+                cv::putText(img, tips, cv::Point(box.tl().x, box.tl().y - 10), cv::FONT_HERSHEY_SIMPLEX,
+                            .5, cv::Scalar(255, 0, 0));
+            }
+            cv::imshow("OpenCV DNN", img);
+            cv::waitKey(0);
+        } else if(isVideo){
+            //todo:
+            spdlog::info("Video inference mode todo");
         }
-        cv::imshow("OpenCV DNN", img);
-        cv::waitKey(0);
         results.clear();
     } else {
         spdlog::error("yaml parse error! yamlPath: {}", yamlPath);
