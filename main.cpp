@@ -9,13 +9,16 @@ int main(int argc, char** argv) {
     CLI::App app{"yolo onnx opencv dnn pred description"};
     argv = app.ensure_utf8(argv);
     std::string onnxPath, yamlPath, imgPath, device = "cpu";
+    bool isImage = false, isVideo = false;
     int imgSize = 640;
-    float threshold = 0.1;
+    float threshold = 0.5;
     app.add_option("-w,--weights", onnxPath, "onnx model path");
     app.add_option("-c,--config", yamlPath, "train yolo yaml path, to find classes definition");
-    app.add_option("-i,--image", imgPath, "pred img path");
+    app.add_option("-i,--input", imgPath, "pred img path");
     app.add_option("-z,--imgsz", imgSize, "img size, default:640 * 640");
-    app.add_option("-t,--threshold", imgSize, "threshold score, default: 0.7");
+    app.add_option("-t,--threshold", imgSize, "threshold score, default: 0.5");
+    app.add_flag("--image, !--no-image", isImage, "Image inference mode");
+    app.add_flag("--video, !--no-video", isImage, "Video inference mode");
     app.add_option("-d,--device", device, "cuda device, i.e. 0 or 0,1,2,3 or cpu, default: cpu");
     CLI11_PARSE(app, argc, argv);
     if(onnxPath.empty()){
@@ -71,7 +74,10 @@ int main(int argc, char** argv) {
         for (DetectResult& dr : results)
         {
             cv::Rect box = dr.box;
-            cv::putText(img, classNames[dr.classId], cv::Point(box.tl().x, box.tl().y - 10), cv::FONT_HERSHEY_SIMPLEX,
+            std::string tips = classNames[dr.classId];
+            tips.append(": ");
+            tips.append(std::to_string(dr.score));
+            cv::putText(img, tips, cv::Point(box.tl().x, box.tl().y - 10), cv::FONT_HERSHEY_SIMPLEX,
                         .5, cv::Scalar(255, 0, 0));
         }
         cv::imshow("OpenCV DNN", img);
