@@ -72,7 +72,7 @@ int main(int argc, char** argv) {
         {
             cv::Rect box = dr.box;
             cv::putText(img, classNames[dr.classId], cv::Point(box.tl().x, box.tl().y - 10), cv::FONT_HERSHEY_SIMPLEX,
-                        .5, cv::Scalar(0, 0, 0));
+                        .5, cv::Scalar(255, 0, 0));
         }
         cv::imshow("OpenCV DNN", img);
         cv::waitKey(0);

@@ -26,6 +26,14 @@ private:
     int input_h = 640;
     cv::dnn::Net net;
     float threshold_score = 0.25;
+
+    /**
+     * 等比resize图像, resize图像最大边到指定尺寸
+     * @param mat
+     * @param max_edge
+     * @return
+     */
+    cv::Mat resize_max_edge(cv::Mat mat, int max_edge);
 };
 
 

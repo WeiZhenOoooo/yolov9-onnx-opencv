@@ -15,6 +15,7 @@ void YOLODetector::initConfig(const std::string& onnxpath, int iw, int ih, float
 
 void YOLODetector::detect(cv::Mat &frame, std::vector<DetectResult> &results) {
     // 图象预处理 - 格式化操作
+    frame = resize_max_edge(frame, this->input_h);
     int w = frame.cols;
     int h = frame.rows;
     int _max = std::max(h, w);
@@ -90,4 +91,26 @@ void YOLODetector::detect(cv::Mat &frame, std::vector<DetectResult> &results) {
     double time = net.getPerfProfile(layersTimings) / freq;
     ss << "FPS: " << 1000 / time << " ; time : " << time << " ms";
     putText(frame, ss.str(), cv::Point(20, 40), cv::FONT_HERSHEY_PLAIN, 2.0, cv::Scalar(255, 0, 0), 2, 8);
+}
+
+cv::Mat YOLODetector::resize_max_edge(cv::Mat mat, int max_edge) {
+    cv::Mat resizeMat;
+    if(!mat.empty()){
+        float width = mat.cols;
+        float height = mat.rows;
+        float new_width, new_height;
+        if(width > height){
+            new_width = max_edge;
+            new_height = max_edge * (height / width);
+        } else if(width < height){
+            new_height = max_edge;
+            new_width = max_edge * (width / height);
+        } else {
+            new_width = max_edge;
+            new_height = max_edge;
+        }
+        spdlog::info("new_width: {}, new_height: {}", new_width, new_height);
+        cv::resize(mat, resizeMat, cv::Size(int(new_width), int(new_height)), 0, 0, cv::INTER_LINEAR);
+    }
+    return resizeMat;
 }
