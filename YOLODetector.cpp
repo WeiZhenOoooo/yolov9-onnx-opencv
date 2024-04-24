@@ -79,7 +79,7 @@ void YOLODetector::detect(cv::Mat &frame, std::vector<DetectResult> &results) {
         dr.box = boxes[index];
         dr.classId = idx;
         dr.score = confidences[index];
-        cv::rectangle(frame, boxes[index], cv::Scalar(0, 0, 255), 2, 8);
+//        cv::rectangle(frame, boxes[index], cv::Scalar(0, 0, 255), 2, 8);
 //        cv::rectangle(frame, cv::Point(boxes[index].tl().x, boxes[index].tl().y - 20),
 //                      cv::Point(boxes[index].br().x, boxes[index].tl().y), cv::Scalar(0, 255, 255), -1);
         results.push_back(dr);
