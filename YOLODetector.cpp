@@ -13,8 +13,12 @@ void YOLODetector::initConfig(const std::string& onnxpath, int iw, int ih, float
     this->net = cv::dnn::readNetFromONNX(onnxpath);
 }
 
-void YOLODetector::detect(cv::Mat &frame, std::vector<DetectResult> &results) {
+void YOLODetector::detect(cv::Mat &img, std::vector<DetectResult> &results) {
     // 图象预处理 - 格式化操作
+    cv::Mat frame;
+    img.copyTo(frame);
+    int imgMax = std::max(img.cols, img.rows);
+    float ratio = float(imgMax) / float(this->input_h);
     frame = resize_max_edge(frame, this->input_h);
     int w = frame.cols;
     int h = frame.rows;
@@ -23,7 +27,6 @@ void YOLODetector::detect(cv::Mat &frame, std::vector<DetectResult> &results) {
     cv::Rect roi(0, 0, w, h);
     frame.copyTo(image(roi));
 
-    float ratio = image.cols / _max;
     cv::Mat blob = cv::dnn::blobFromImage(image, 1 / 255.0, cv::Size(this->input_w, this->input_h), cv::Scalar(0, 0, 0),
                                           true, false);
 
@@ -79,18 +82,15 @@ void YOLODetector::detect(cv::Mat &frame, std::vector<DetectResult> &results) {
         dr.box = boxes[index];
         dr.classId = idx;
         dr.score = confidences[index];
-//        cv::rectangle(frame, boxes[index], cv::Scalar(0, 0, 255), 2, 8);
-//        cv::rectangle(frame, cv::Point(boxes[index].tl().x, boxes[index].tl().y - 20),
-//                      cv::Point(boxes[index].br().x, boxes[index].tl().y), cv::Scalar(0, 255, 255), -1);
         results.push_back(dr);
     }
-
-    std::ostringstream ss;
-    std::vector<double> layersTimings;
-    double freq = cv::getTickFrequency() / 1000.0;
-    double time = this->net.getPerfProfile(layersTimings) / freq;
-    ss << "FPS: " << 1000 / time << " ; time : " << time << " ms";
-    putText(frame, ss.str(), cv::Point(20, 40), cv::FONT_HERSHEY_PLAIN, 2.0, cv::Scalar(255, 0, 0), 2, 8);
+//
+//    std::ostringstream ss;
+//    std::vector<double> layersTimings;
+//    double freq = cv::getTickFrequency() / 1000.0;
+//    double time = this->net.getPerfProfile(layersTimings) / freq;
+//    ss << "FPS: " << 1000 / time << " ; time : " << time << " ms";
+//    putText(frame, ss.str(), cv::Point(20, 40), cv::FONT_HERSHEY_PLAIN, 2.0, cv::Scalar(255, 0, 0), 2, 8);
 }
 
 cv::Mat YOLODetector::resize_max_edge(const cv::Mat& mat, int max_edge) {

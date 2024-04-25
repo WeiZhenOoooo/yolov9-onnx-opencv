@@ -80,16 +80,13 @@ int main(int argc, char** argv) {
         std::vector<DetectResult> results;
         if(isImage){
             detector->detect(img, results);
-            int iw = input.cols, ih = input.rows;
-            int maxwh = std::max(iw, ih);
-            float ratio = float(maxwh) / float(imgSize);
             for (DetectResult& dr : results)
             {
                 cv::Rect box = dr.box;
-                box.x = int(box.x * ratio);
-                box.y = int(box.y * ratio);
-                box.width = int(box.width * ratio);
-                box.height = int(box.height * ratio);
+                box.x = int(box.x);
+                box.y = int(box.y);
+                box.width = int(box.width);
+                box.height = int(box.height);
                 std::string tips = classNames[dr.classId];
                 tips.append(": ");
                 tips.append(std::to_string(dr.score));
