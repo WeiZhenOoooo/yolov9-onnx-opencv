@@ -102,9 +102,11 @@ int main(int argc, char** argv) {
                 spdlog::error("Error opening video stream or file!! path: {}", imgPath);
                 return 0;
             }
-            cv::Mat frame;
+            cv::Mat mat;
             while (true){
-                cap >> frame; // 读取新的帧
+                cv::Mat frame;
+                cap.read(mat); // 读取新的帧
+                frame = mat.clone();
                 if(frame.empty()){
                     break;
                 }
@@ -119,9 +121,7 @@ int main(int argc, char** argv) {
                                 .5, cv::Scalar(255, 0, 0));
                     cv::rectangle(frame, box, cv::Scalar(0, 0, 255), 2, 8);
                 }
-                cv::Mat mat;
-                frame.copyTo(mat);
-                cv::imshow("OpenCV DNN", mat);
+                cv::imshow("OpenCV DNN", frame);
                 cv::waitKey(1);
             }
             //todo:
