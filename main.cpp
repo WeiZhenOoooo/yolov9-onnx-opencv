@@ -71,24 +71,33 @@ int main(int argc, char** argv) {
     }
     spdlog::info("classNames size: {}", classNames.size());
     if(!classNames.empty()){
-        cv::Mat img = cv::imread(imgPath, cv::IMREAD_UNCHANGED);
+        cv::Mat input = cv::imread(imgPath, cv::IMREAD_UNCHANGED);
+        cv::Mat img;
+        input.copyTo(img);
         std::shared_ptr<YOLODetector> detector = std::make_shared<YOLODetector>();
         int width = imgSize, height = imgSize;
         detector->initConfig(onnxPath, width, height, threshold);
         std::vector<DetectResult> results;
         if(isImage){
             detector->detect(img, results);
+            int iw = input.cols, ih = input.rows;
+            int maxwh = std::max(iw, ih);
+            float ratio = float(maxwh) / float(imgSize);
             for (DetectResult& dr : results)
             {
                 cv::Rect box = dr.box;
+                box.x = int(box.x * ratio);
+                box.y = int(box.y * ratio);
+                box.width = int(box.width * ratio);
+                box.height = int(box.height * ratio);
                 std::string tips = classNames[dr.classId];
                 tips.append(": ");
                 tips.append(std::to_string(dr.score));
-                cv::putText(img, tips, cv::Point(box.tl().x, box.tl().y - 10), cv::FONT_HERSHEY_SIMPLEX,
+                cv::putText(input, tips, cv::Point(box.tl().x, box.tl().y - 10), cv::FONT_HERSHEY_SIMPLEX,
                             .5, cv::Scalar(255, 0, 0));
-                cv::rectangle(img, box, cv::Scalar(0, 0, 255), 2, 8);
+                cv::rectangle(input, box, cv::Scalar(0, 0, 255), 2, 8);
             }
-            cv::imshow("OpenCV DNN", img);
+            cv::imshow("OpenCV DNN", input);
             cv::waitKey(0);
         } else if(isVideo){
             cv::VideoCapture cap(imgPath);
