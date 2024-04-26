@@ -3,6 +3,7 @@
 //
 
 #include "Utils.h"
+#include <fstream>
 
 
 cv::Mat Utils::resize_max_edge(const cv::Mat& mat, int max_edge) {
@@ -28,4 +29,15 @@ cv::Mat Utils::resize_max_edge(const cv::Mat& mat, int max_edge) {
 
 int CUDAUtils::getCUDACount() {
     return cv::cuda::getCudaEnabledDeviceCount();
+}
+
+bool FileUtils::fileIsExist(const std::string path) {
+    bool res = false;
+    if(!path.empty()){
+        std::ifstream f(path.c_str());
+        if(f.good()){
+            res = true;
+        }
+    }
+    return res;
 }

@@ -5,6 +5,7 @@
 #include "CLI11/CLI11.hpp"
 #include <spdlog/spdlog.h>
 #include "Utils/Utils.h"
+#include <opencv2/core.hpp>
 
 int main(int argc, char** argv) {
     CLI::App app{"yolo onnx opencv dnn pred description"};
@@ -26,8 +27,7 @@ int main(int argc, char** argv) {
         spdlog::error("onnx model path is empty !!!, onnx model path: {}", onnxPath);
         return 0;
     } else {
-        std::ifstream f(onnxPath.c_str());
-        if(!f.good()) {
+        if(!FileUtils::fileIsExist(onnxPath)){
             spdlog::error("onnx model path is not exist !!!, onnx model path: {}, Please check it", onnxPath);
             return 0;
         }
@@ -36,8 +36,7 @@ int main(int argc, char** argv) {
         spdlog::error("yolo yaml path is empty !!! , yolo yaml path: {}", yamlPath);
         return 0;
     } else {
-        std::ifstream f(yamlPath.c_str());
-        if(!f.good()) {
+        if(!FileUtils::fileIsExist(yamlPath)){
             spdlog::error("yolo yaml path is not exist !!!, yolo yaml path: {}, Please check it", yamlPath);
             return 0;
         }
@@ -46,8 +45,7 @@ int main(int argc, char** argv) {
         spdlog::error("pred input path is empty !!! , pred input path: {}", inputPath);
         return 0;
     } else {
-        std::ifstream f(inputPath.c_str());
-        if(!f.good()) {
+        if(!FileUtils::fileIsExist(inputPath)) {
             spdlog::error("pred input path is not exist !!!, pred input path: {}, Please check it", inputPath);
             return 0;
         }
@@ -71,13 +69,31 @@ int main(int argc, char** argv) {
     spdlog::info("Image inference mode: {}", isImage);
     spdlog::info("Video inference mode: {}", isVideo);
     spdlog::info("Cuda inference mode: {}", isCuda);
-    YAML::Node config = YAML::LoadFile(yamlPath);
+
+    //parse ymal, to find classes definition
     std::map<int, std::string> classNames;
-    if(!config["names"].IsNull() && config["names"].IsMap()){
-        for(size_t i = 0; i < config["names"].size(); ++i){
-            classNames[i] = config["names"][i].as<std::string>();
-        }
-    }
+//    YAML::Node config = YAML::LoadFile(yamlPath);
+//    if(!config["names"].IsNull() && config["names"].IsMap()){
+//        for(size_t i = 0; i < config["names"].size(); ++i){
+//            classNames[i] = config["names"][i].as<std::string>();
+//        }
+//    }
+
+    cv::FileStorage config(yamlPath, cv::FileStorage::READ, "utf-8");
+//    if(config.isOpened()){
+//        cv::FileNode namesNode = config["names"];
+//        std::cout << namesNode.size() << std::endl;
+//        if(!namesNode.empty()){
+//
+//        } else {
+//            spdlog::error("yaml path: {} don't have node [names], please check yaml", yamlPath);
+//            return 0;
+//        }
+//    } else {
+//        spdlog::error("yaml path: {} open failed !!!", yamlPath);
+//        return 0;
+//    }
+
     spdlog::info("classNames size: {}", classNames.size());
     if(!classNames.empty()){
         cv::Mat input = cv::imread(inputPath, cv::IMREAD_UNCHANGED);

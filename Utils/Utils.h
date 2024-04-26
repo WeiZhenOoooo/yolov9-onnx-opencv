@@ -33,4 +33,17 @@ public:
     static int getCUDACount();
 };
 
+/**
+ * File工具类
+ */
+class FileUtils{
+public:
+    /**
+     * File 是否存在
+     * @param path
+     * @return
+     */
+    static bool fileIsExist(const std::string path);
+};
+
 #endif //YOLO_ONNX_OPENCV_UTILS_H
