@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
     }
     spdlog::info("onnx model path: {}", onnxPath);
     spdlog::info("yolo yaml path: {}", yamlPath);
-    spdlog::info("pred img path: {}", inputPath);
+    spdlog::info("pred input path: {}", inputPath);
     spdlog::info("pred img size: {}", imgSize);
     spdlog::info("confidence threshold: {}", threshold);
     spdlog::info("Image inference mode: {}", isImage);
