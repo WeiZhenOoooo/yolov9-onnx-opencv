@@ -13,5 +13,8 @@ include_directories(${OpenCV_INCLUDE_DIRS} ${Yaml_Cpp_DIR}/include ${Spdlog_DIR}
 add_executable(yolo-onnx-opencv main.cpp
         YOLODetector.cpp
         YOLODetector.h
-        CLI11/CLI11.hpp)
+        CLI11/CLI11.hpp
+        Utils/Utils.cpp
+        Utils/Utils.h
+)
 target_link_libraries(yolo-onnx-opencv ${OpenCV_LIBS} ${Yaml_Cpp_DIR}/lib/yaml-cpp.lib)

@@ -22,11 +22,12 @@ public:
     /**
      * 加载模型配置
      * @param onnxpath  onnx 模型路径
-     * @param iw    模型输入图像width
-     * @param ih    模型输入图像height
-     * @param threshold 输出预测结果score threshold
+     * @param iw    模型输入图像 width
+     * @param ih    模型输入图像 height
+     * @param threshold 输出预测结果 score threshold
+     * @param device cuda device
      */
-    void initConfig(const std::string& onnxpath, int iw, int ih, float threshold);
+    void initConfig(const std::string& onnxpath, int iw, int ih, float threshold, bool isCuda);
 
     /**
      * 预测
@@ -39,14 +40,6 @@ private:
     int input_h = 640;
     cv::dnn::Net net;
     float threshold_score = 0.25;
-
-    /**
-     * 等比resize图像, resize图像最大边到指定尺寸
-     * @param mat
-     * @param max_edge
-     * @return
-     */
-    cv::Mat resize_max_edge(const cv::Mat& mat, int max_edge);;
 };
 
 

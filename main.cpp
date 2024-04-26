@@ -4,22 +4,23 @@
 #include <fstream>
 #include "CLI11/CLI11.hpp"
 #include <spdlog/spdlog.h>
+#include "Utils/Utils.h"
 
 int main(int argc, char** argv) {
     CLI::App app{"yolo onnx opencv dnn pred description"};
     argv = app.ensure_utf8(argv);
-    std::string onnxPath, yamlPath, imgPath, device = "cpu";
-    bool isImage = false, isVideo = false;
+    std::string onnxPath, yamlPath, imgPath;
+    bool isImage = false, isVideo = false, isCuda = false;
     int imgSize = 640;
     float threshold = 0.5;
     app.add_option("-w,--weights", onnxPath, "onnx model path");
     app.add_option("-c,--config", yamlPath, "train yolo yaml path, to find classes definition");
     app.add_option("-i,--input", imgPath, "pred img path");
-    app.add_option("-z,--imgsz", imgSize, "img size, default:640 * 640");
+    app.add_option("-z,--imgsize", imgSize, "img size, default:640 * 640");
     app.add_option("-t,--threshold", threshold, "threshold score, default: 0.5");
     app.add_flag("--image, !--no-image", isImage, "Image inference mode");
     app.add_flag("--video, !--no-video", isVideo, "Video inference mode");
-    app.add_option("-d,--device", device, "cuda device, i.e. 0 or 0,1,2,3 or cpu, default: cpu");
+    app.add_flag("--gpu, !--no-gpu", isCuda, "Cuda inference mode");
     CLI11_PARSE(app, argc, argv);
     if(onnxPath.empty()){
         spdlog::error("onnx model path is empty !!!, onnx model path: {}", onnxPath);
@@ -55,6 +56,13 @@ int main(int argc, char** argv) {
         spdlog::error("Please select inference mode");
         return 0;
     }
+    if(isCuda){
+        int cudaCount = CUDAUtils::getCUDACount();
+        if(cudaCount < 1){
+            spdlog::warn("cuda size: {}, default use cpu, please check device exist gpu", cudaCount);
+            isCuda = false;
+        }
+    }
     spdlog::info("onnx model path: {}", onnxPath);
     spdlog::info("yolo yaml path: {}", yamlPath);
     spdlog::info("pred img path: {}", imgPath);
@@ -62,6 +70,7 @@ int main(int argc, char** argv) {
     spdlog::info("confidence threshold: {}", threshold);
     spdlog::info("Image inference mode: {}", isImage);
     spdlog::info("Video inference mode: {}", isVideo);
+    spdlog::info("Cuda inference mode: {}", isCuda);
     YAML::Node config = YAML::LoadFile(yamlPath);
     std::map<int, std::string> classNames;
     if(!config["names"].IsNull() && config["names"].IsMap()){
@@ -76,7 +85,7 @@ int main(int argc, char** argv) {
         input.copyTo(img);
         std::shared_ptr<YOLODetector> detector = std::make_shared<YOLODetector>();
         int width = imgSize, height = imgSize;
-        detector->initConfig(onnxPath, width, height, threshold);
+        detector->initConfig(onnxPath, width, height, threshold, isCuda);
         std::vector<DetectResult> results;
         if(isImage){
             detector->detect(img, results);

@@ -3,14 +3,24 @@
 //
 
 #include "YOLODetector.h"
+#include "Utils/Utils.h"
 
 YOLODetector::YOLODetector() = default;
 
-void YOLODetector::initConfig(const std::string& onnxpath, int iw, int ih, float threshold) {
+void YOLODetector::initConfig(const std::string& onnxpath, int iw, int ih, float threshold, bool isCuda) {
     this->input_w = iw;
     this->input_h = ih;
     this->threshold_score = threshold;
     this->net = cv::dnn::readNetFromONNX(onnxpath);
+    if(isCuda){
+        spdlog::info("Intialize Model By GPU");
+        this->net.setPreferableBackend(cv::dnn::DNN_BACKEND_CUDA);
+        this->net.setPreferableTarget(cv::dnn::DNN_TARGET_CUDA);
+    } else {
+        spdlog::info("Intialize Model By CPU");
+        this->net.setPreferableBackend(cv::dnn::DNN_BACKEND_DEFAULT);
+        this->net.setPreferableTarget(cv::dnn::DNN_TARGET_CPU);
+    }
 }
 
 void YOLODetector::detect(cv::Mat &img, std::vector<DetectResult> &results) {
@@ -19,7 +29,8 @@ void YOLODetector::detect(cv::Mat &img, std::vector<DetectResult> &results) {
     img.copyTo(frame);
     int imgMax = std::max(img.cols, img.rows);
     float ratio = float(imgMax) / float(this->input_h);
-    frame = resize_max_edge(frame, this->input_h);
+    frame = Utils::resize_max_edge(frame, this->input_h);
+//    frame = resize_max_edge(frame, this->input_h);
     int w = frame.cols;
     int h = frame.rows;
     int _max = std::max(h, w);
@@ -74,10 +85,9 @@ void YOLODetector::detect(cv::Mat &img, std::vector<DetectResult> &results) {
     // NMS
     std::vector<int> indexes;
     cv::dnn::NMSBoxes(boxes, confidences, 0.25, 0.45, indexes);
-    for (size_t i = 0; i < indexes.size(); i++)
+    for (int index : indexes)
     {
         DetectResult dr;
-        int index = indexes[i];
         int idx = classIds[index];
         dr.box = boxes[index];
         dr.classId = idx;
@@ -93,23 +103,3 @@ void YOLODetector::detect(cv::Mat &img, std::vector<DetectResult> &results) {
 //    putText(frame, ss.str(), cv::Point(20, 40), cv::FONT_HERSHEY_PLAIN, 2.0, cv::Scalar(255, 0, 0), 2, 8);
 }
 
-cv::Mat YOLODetector::resize_max_edge(const cv::Mat& mat, int max_edge) {
-    cv::Mat resizeMat;
-    if(!mat.empty()){
-        float width = mat.cols;
-        float height = mat.rows;
-        float new_width, new_height;
-        if(width > height){
-            new_width = max_edge;
-            new_height = max_edge * (height / width);
-        } else if(width < height){
-            new_height = max_edge;
-            new_width = max_edge * (width / height);
-        } else {
-            new_width = max_edge;
-            new_height = max_edge;
-        }
-        cv::resize(mat, resizeMat, cv::Size(int(new_width), int(new_height)), 0, 0, cv::INTER_LINEAR);
-    }
-    return resizeMat;
-}
