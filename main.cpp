@@ -9,14 +9,14 @@
 int main(int argc, char** argv) {
     CLI::App app{"yolo onnx opencv dnn pred description"};
     argv = app.ensure_utf8(argv);
-    std::string onnxPath, yamlPath, imgPath;
+    std::string onnxPath, yamlPath, inputPath;
     bool isImage = false, isVideo = false, isCuda = false;
     int imgSize = 640;
     float threshold = 0.5;
     app.add_option("-w,--weights", onnxPath, "onnx model path");
     app.add_option("-c,--config", yamlPath, "train yolo yaml path, to find classes definition");
-    app.add_option("-i,--input", imgPath, "pred img path");
-    app.add_option("-z,--imgsize", imgSize, "img size, default:640 * 640");
+    app.add_option("-i,--input", inputPath, "pred input path");
+    app.add_option("-z,--size", imgSize, "input size(size * size), default:640 * 640");
     app.add_option("-t,--threshold", threshold, "threshold score, default: 0.5");
     app.add_flag("--image, !--no-image", isImage, "Image inference mode");
     app.add_flag("--video, !--no-video", isVideo, "Video inference mode");
@@ -42,13 +42,13 @@ int main(int argc, char** argv) {
             return 0;
         }
     }
-    if(imgPath.empty()){
-        spdlog::error("pred img path is empty !!! , pred img path: {}", imgPath);
+    if(inputPath.empty()){
+        spdlog::error("pred input path is empty !!! , pred input path: {}", inputPath);
         return 0;
     } else {
-        std::ifstream f(imgPath.c_str());
+        std::ifstream f(inputPath.c_str());
         if(!f.good()) {
-            spdlog::error("pred img path is not exist !!!, pred img path: {}, Please check it", imgPath);
+            spdlog::error("pred input path is not exist !!!, pred input path: {}, Please check it", inputPath);
             return 0;
         }
     }
@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
     }
     spdlog::info("onnx model path: {}", onnxPath);
     spdlog::info("yolo yaml path: {}", yamlPath);
-    spdlog::info("pred img path: {}", imgPath);
+    spdlog::info("pred img path: {}", inputPath);
     spdlog::info("pred img size: {}", imgSize);
     spdlog::info("confidence threshold: {}", threshold);
     spdlog::info("Image inference mode: {}", isImage);
@@ -80,7 +80,7 @@ int main(int argc, char** argv) {
     }
     spdlog::info("classNames size: {}", classNames.size());
     if(!classNames.empty()){
-        cv::Mat input = cv::imread(imgPath, cv::IMREAD_UNCHANGED);
+        cv::Mat input = cv::imread(inputPath, cv::IMREAD_UNCHANGED);
         cv::Mat img;
         input.copyTo(img);
         std::shared_ptr<YOLODetector> detector = std::make_shared<YOLODetector>();
@@ -106,9 +106,9 @@ int main(int argc, char** argv) {
             cv::imshow("OpenCV DNN", input);
             cv::waitKey(0);
         } else if(isVideo){
-            cv::VideoCapture cap(imgPath);
+            cv::VideoCapture cap(inputPath);
             if(!cap.isOpened()){
-                spdlog::error("Error opening video stream or file!! path: {}", imgPath);
+                spdlog::error("Error opening video stream or file!! path: {}", inputPath);
                 return 0;
             }
             cv::Mat mat;
