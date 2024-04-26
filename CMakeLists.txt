@@ -5,10 +5,10 @@ set(CMAKE_CXX_STANDARD 17)
 
 set(OpenCV_DIR "D:/CredLib_DIR/opencv47/build")
 set(Yaml_Cpp_DIR "D:/CredLib_DIR/yaml-cpp")
-set(Spdlog_DIR "D:/CredLib_DIR/spdlog")
+
 
 find_package(OpenCV REQUIRED)
-include_directories(${OpenCV_INCLUDE_DIRS} ${Yaml_Cpp_DIR}/include ${Spdlog_DIR}/include)
+include_directories(${OpenCV_INCLUDE_DIRS} ${Yaml_Cpp_DIR}/include spdlog)
 
 add_executable(yolo-onnx-opencv main.cpp
         YOLODetector.cpp
