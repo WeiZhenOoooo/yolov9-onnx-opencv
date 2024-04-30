@@ -72,28 +72,12 @@ int main(int argc, char** argv) {
 
     //parse ymal, to find classes definition
     std::map<int, std::string> classNames;
-//    YAML::Node config = YAML::LoadFile(yamlPath);
-//    if(!config["names"].IsNull() && config["names"].IsMap()){
-//        for(size_t i = 0; i < config["names"].size(); ++i){
-//            classNames[i] = config["names"][i].as<std::string>();
-//        }
-//    }
-
-    cv::FileStorage config(yamlPath, cv::FileStorage::READ, "utf-8");
-//    if(config.isOpened()){
-//        cv::FileNode namesNode = config["names"];
-//        std::cout << namesNode.size() << std::endl;
-//        if(!namesNode.empty()){
-//
-//        } else {
-//            spdlog::error("yaml path: {} don't have node [names], please check yaml", yamlPath);
-//            return 0;
-//        }
-//    } else {
-//        spdlog::error("yaml path: {} open failed !!!", yamlPath);
-//        return 0;
-//    }
-
+    YAML::Node config = YAML::LoadFile(yamlPath);
+    if(!config["names"].IsNull() && config["names"].IsMap()){
+        for(size_t i = 0; i < config["names"].size(); ++i){
+            classNames[i] = config["names"][i].as<std::string>();
+        }
+    }
     spdlog::info("classNames size: {}", classNames.size());
     if(!classNames.empty()){
         cv::Mat input = cv::imread(inputPath, cv::IMREAD_UNCHANGED);
