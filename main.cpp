@@ -100,7 +100,7 @@ int main(int argc, char** argv) {
                 tips.append(": ");
                 tips.append(std::to_string(dr.score));
                 cv::putText(input, tips, cv::Point(box.tl().x, box.tl().y - 10), cv::FONT_HERSHEY_SIMPLEX,
-                            .5, cv::Scalar(255, 0, 0));
+                            .5, cv::Scalar(204, 255, 255));
                 cv::rectangle(input, box, cv::Scalar(0, 0, 255), 2, 8);
             }
             cv::imshow("OpenCV DNN", input);
