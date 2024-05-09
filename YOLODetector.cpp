@@ -30,7 +30,6 @@ void YOLODetector::detect(cv::Mat &img, std::vector<DetectResult> &results) {
     int imgMax = std::max(img.cols, img.rows);
     float ratio = float(imgMax) / float(this->input_h);
     frame = Utils::resize_max_edge(frame, this->input_h);
-//    frame = resize_max_edge(frame, this->input_h);
     int w = frame.cols;
     int h = frame.rows;
     int _max = std::max(h, w);
@@ -94,12 +93,29 @@ void YOLODetector::detect(cv::Mat &img, std::vector<DetectResult> &results) {
         dr.score = confidences[index];
         results.push_back(dr);
     }
-//
+}
+
+void YOLODetector::draw(cv::Mat &mat, const std::vector<DetectResult>& results, const std::map<int, std::string>& classesInfo) {
+    for (DetectResult dr : results)
+    {
+        cv::Rect box = dr.box;
+        box.x = int(box.x);
+        box.y = int(box.y);
+        box.width = int(box.width);
+        box.height = int(box.height);
+        std::string tips = classesInfo.at(dr.classId);
+        tips.append(": ");
+        tips.append(std::to_string(dr.score));
+        cv::putText(mat, tips, cv::Point(box.tl().x, box.tl().y - 10), cv::FONT_HERSHEY_SIMPLEX,
+                    .5, cv::Scalar(204, 255, 255));
+        cv::rectangle(mat, box, cv::Scalar(0, 0, 255), 2, 8);
+    }
+
 //    std::ostringstream ss;
 //    std::vector<double> layersTimings;
 //    double freq = cv::getTickFrequency() / 1000.0;
 //    double time = this->net.getPerfProfile(layersTimings) / freq;
 //    ss << "FPS: " << 1000 / time << " ; time : " << time << " ms";
-//    putText(frame, ss.str(), cv::Point(20, 40), cv::FONT_HERSHEY_PLAIN, 2.0, cv::Scalar(255, 0, 0), 2, 8);
+//    putText(mat, ss.str(), cv::Point(20, 40), cv::FONT_HERSHEY_PLAIN, 2.0, cv::Scalar(255, 0, 0), 2, 8);
 }
 

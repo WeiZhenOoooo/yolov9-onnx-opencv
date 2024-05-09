@@ -35,6 +35,14 @@ public:
      * @param results 预测结果
      */
     void detect(cv::Mat& frame, std::vector<DetectResult>& results);
+
+    /**
+     * 图像绘制预测结果
+     * @param mat   图像
+     * @param results   预测结果
+     * @param classesInfo   类别信息
+     */
+    void draw(cv::Mat& mat, const std::vector<DetectResult>& results, const std::map<int, std::string>& classesInfo);
 private:
     int input_w = 640;
     int input_h = 640;

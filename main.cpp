@@ -71,15 +71,18 @@ int main(int argc, char** argv) {
     spdlog::info("Cuda inference mode: {}", isCuda);
 
     //parse ymal, to find classes definition
-    std::map<int, std::string> classNames;
+    std::map<int, std::string> classesInfo;
     YAML::Node config = YAML::LoadFile(yamlPath);
     if(!config["names"].IsNull() && config["names"].IsMap()){
         for(size_t i = 0; i < config["names"].size(); ++i){
-            classNames[i] = config["names"][i].as<std::string>();
+            classesInfo[i] = config["names"][i].as<std::string>();
         }
+    } else {
+        spdlog::error("yaml do not have classes info !!! , yolo yaml path: {}", yamlPath);
+        return 0;
     }
-    spdlog::info("classNames size: {}", classNames.size());
-    if(!classNames.empty()){
+    spdlog::info("classesInfo size: {}", classesInfo.size());
+    if(!classesInfo.empty()){
         cv::Mat input = cv::imread(inputPath, cv::IMREAD_UNCHANGED);
         cv::Mat img;
         input.copyTo(img);
@@ -89,20 +92,7 @@ int main(int argc, char** argv) {
         std::vector<DetectResult> results;
         if(isImage){
             detector->detect(img, results);
-            for (DetectResult& dr : results)
-            {
-                cv::Rect box = dr.box;
-                box.x = int(box.x);
-                box.y = int(box.y);
-                box.width = int(box.width);
-                box.height = int(box.height);
-                std::string tips = classNames[dr.classId];
-                tips.append(": ");
-                tips.append(std::to_string(dr.score));
-                cv::putText(input, tips, cv::Point(box.tl().x, box.tl().y - 10), cv::FONT_HERSHEY_SIMPLEX,
-                            .5, cv::Scalar(204, 255, 255));
-                cv::rectangle(input, box, cv::Scalar(0, 0, 255), 2, 8);
-            }
+            detector->draw(input, results, classesInfo);
             cv::imshow("OpenCV DNN", input);
             cv::waitKey(0);
         } else if(isVideo){
@@ -111,30 +101,18 @@ int main(int argc, char** argv) {
                 spdlog::error("Error opening video stream or file!! path: {}", inputPath);
                 return 0;
             }
-            cv::Mat mat;
+            cv::Mat frame;
             while (true){
-                cv::Mat frame;
-                cap.read(mat); // 读取新的帧
-                frame = mat.clone();
+                cap >> frame;
                 if(frame.empty()){
                     break;
                 }
                 detector->detect(frame, results);
-                for (DetectResult& dr : results)
-                {
-                    cv::Rect box = dr.box;
-                    std::string tips = classNames[dr.classId];
-                    tips.append(": ");
-                    tips.append(std::to_string(dr.score));
-                    cv::putText(frame, tips, cv::Point(box.tl().x, box.tl().y - 10), cv::FONT_HERSHEY_SIMPLEX,
-                                .5, cv::Scalar(255, 0, 0));
-                    cv::rectangle(frame, box, cv::Scalar(0, 0, 255), 2, 8);
-                }
+                detector->draw(frame, results, classesInfo);
+                results.clear();
                 cv::imshow("OpenCV DNN", frame);
                 cv::waitKey(1);
             }
-            //todo:
-            spdlog::info("Video inference mode todo");
         }
         results.clear();
     } else {
