@@ -83,17 +83,15 @@ int main(int argc, char** argv) {
     }
     spdlog::info("classesInfo size: {}", classesInfo.size());
     if(!classesInfo.empty()){
-        cv::Mat input = cv::imread(inputPath, cv::IMREAD_UNCHANGED);
-        cv::Mat img;
-        input.copyTo(img);
+        cv::Mat img = cv::imread(inputPath, cv::IMREAD_UNCHANGED);
         std::shared_ptr<YOLODetector> detector = std::make_shared<YOLODetector>();
         int width = imgSize, height = imgSize;
         detector->initConfig(onnxPath, width, height, threshold, isCuda);
         std::vector<DetectResult> results;
         if(isImage){
             detector->detect(img, results);
-            detector->draw(input, results, classesInfo);
-            cv::imshow("OpenCV DNN", input);
+            detector->draw(img, results, classesInfo);
+            cv::imshow("OpenCV DNN", img);
             cv::waitKey(0);
         } else if(isVideo){
             cv::VideoCapture cap(inputPath);
